@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ruleta de Conversación</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-image: url('https://images.unsplash.com/photo-1629654858857-615c2c8be8a8?q=80&w=3294&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      font-family: 'Playfair Display', serif;
+      text-align: center;
+    }
+
+    #logo {
+      margin-top: 20px;
+      max-width: 300px;
+      width: 80%;
+    }
+
+    #wheelCanvas {
+      margin: 20px auto;
+      display: block;
+      max-width: 90vw;
+    }
+
+    #spinButton {
+      background-color: #f5f5f5;
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    #spinButton:hover {
+      background-color: #d0e0f0;
+    }
+  </style>
+</head>
+<body>
+  <img id="logo" src="https://example.com/tu-logo.png" alt="Logo de la ruleta" />
+  <canvas id="wheelCanvas" width="500" height="500"></canvas>
+  <button id="spinButton">Girar</button>
+
+  <script>
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const spinButton = document.getElementById('spinButton');
+
+    const categories = [
+      { label: 'Historias memorables', color: '#e3e3cf', textColor: '#4e6146' },
+      { label: 'Rompehielos', color: '#a3c0e2', textColor: '#1d2f5c' },
+      { label: 'Amor, bodas y confesiones', color: '#fcd1d9', textColor: '#893039' }
+    ];
+
+    const segments = [];
+    const totalSegments = 12;
+    for (let i = 0; i < totalSegments; i++) {
+      segments.push(categories[i % categories.length]);
+    }
+
+    let startAngle = 0;
+    const arc = (2 * Math.PI) / segments.length;
+    let spinAngle = 0;
+    let isSpinning = false;
+
+    function drawWheel() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < segments.length; i++) {
+        const angle = startAngle + i * arc;
+        ctx.beginPath();
+        ctx.fillStyle = segments[i].color;
+        ctx.moveTo(canvas.width / 2, canvas.height / 2);
+        ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2 - 10, angle, angle + arc, false);
+        ctx.fill();
+
+        // Texto personalizado por categoría
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(angle + arc / 2);
+        ctx.fillStyle = segments[i].textColor;
+        ctx.font = 'italic bold 14px "Playfair Display", serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(segments[i].label, canvas.width / 2 - 20, 0);
+        ctx.restore();
+      }
+
+      // Flecha personalizada
+      ctx.fillStyle = '#893039';
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2 - 10, 10);
+      ctx.lineTo(canvas.width / 2 + 10, 10);
+      ctx.lineTo(canvas.width / 2, 40);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function rotateWheel() {
+      if (isSpinning) return;
+      isSpinning = true;
+      const duration = 5000; // duración en ms
+      const start = performance.now();
+      const spins = Math.floor(Math.random() * 5) + 5; // entre 5 y 9 vueltas
+      const finalAngle = Math.random() * 2 * Math.PI;
+
+      function animate(time) {
+        const elapsed = time - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        spinAngle = easeOut * (2 * Math.PI * spins + finalAngle);
+        startAngle = spinAngle;
+        drawWheel();
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          isSpinning = false;
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    drawWheel();
+    spinButton.addEventListener('click', rotateWheel);
+  </script>
+</body>
+</html>
